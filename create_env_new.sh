@@ -6,20 +6,27 @@
 
 ##Get the project name from arguements
 projectname=$1
+gitinit=$2
+gitbool=$3
+
+validtrue="y yes t true c create"
+
 
 ##Check if arguement is blank
 if [ "$projectname" = "" ]; then
     echo "No arguement given. Please pass the project name as an arguement"
 
-##Check if arguement isn't blank
-fi; if [ ! "$projectname" = "" ]; then
+##If arguement isn't blank
+else
 
     ##if a project file doesn't exist Make the project folder
     if [ ! -d "$projectname" ]; then 
-        mkdir $projectname
+        mkdir "$projectname"
+    fi;
+
 
     ##if a project file has been created or existed
-    fi; if [ -d "$projectname" ]; then
+    if [ -d "$projectname" ]; then 
 
         ##Change into directory and Create the python virtual enviroment
         cd "$projectname"
@@ -57,12 +64,12 @@ fi; if [ ! "$projectname" = "" ]; then
                 pipenv install -r $requirements
 
             ##No requirements in the file  
-            fi; if [ -z $requirements ]; then
+            else
                 echo "empty requirements file... Doing nothing"
             fi
 
         ##Checks if the requirements file exists
-        fi; if [ ! -r $requirements ]; then
+        else
             echo "'"$requirements"' does not exist."
         fi        
 
@@ -75,8 +82,22 @@ fi; if [ ! "$projectname" = "" ]; then
 
         echo "Enviroment successfully created.."
 
-    ##checks if the project directory could not be created
-    fi; if [ ! -d "$projectname" ]; then
+
+        #todo git integration
+        if [ "$gitinit" = "--git" ]; then
+            if echo $validtrue | grep -w $gitbool > /dev/null; then
+                echo "Should add a git repo now"
+                #git init
+
+                #there shouldn't be files here on a new project but should help integrating old projects 
+                #git add "/source/*"
+
+            fi
+        fi
+        
+
+    ##If the project directory could not be created
+    else
         echo "The project folder could not be created"
     fi
 
