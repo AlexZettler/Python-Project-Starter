@@ -3,7 +3,7 @@
 
 
 ##Save the requirements just in case we want it back
-pipenv 
+pipenv lock
 
 
 ## remove the path
