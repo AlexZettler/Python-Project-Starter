@@ -57,10 +57,19 @@ docs/_build/
 # PyBuilder
 target/
 
-./managed_projects/*
 
+############
+#  pipenv  #
+############
 Pipfile
+Pipfile\.lock
 
+#######################
+#  Project specifics  #
+#######################
+/managed_projects/*
+
+
+*.vscode
 *.code-workspace
 
-Pipfile\.lock

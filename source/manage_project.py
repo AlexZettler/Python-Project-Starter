@@ -1,13 +1,20 @@
-import json
 import os
 import subprocess
 import platform
 import sys
 import argparse
 
-def create_pip_env(proj_path: str):
+def create_pip_env(source_path: str):
 
-	os.chdir(proj_path)
+	"""
+	Create a pipenv enviroment in the given directory
+
+		:param proj_path:str:
+			The path to the project source folder
+	"""
+
+	#Change directory
+	os.chdir(source_path)
 
 	# create the working pipenv
 	subprocess.run(["pipenv", "--python", "3.6"], stdout=subprocess.PIPE)
@@ -18,14 +25,24 @@ def create_pip_env(proj_path: str):
 	elif platform.system() == "Linux":
 		pass
 
-def install_requirements(proj_path: str):
+def install_requirements(proj_path: str, source_path: str):
+	"""
+	Installs the requirements from the requirements file if it exists
+
+		:param proj_path:str:
+			The path to the project folder
+	"""
+
 	requirements_file = "requirements.txt"
 
 	os.chdir(proj_path)
 	if requirements_file in os.listdir():
+    	
+		#go to the source folder and install pipenv requirements
+		os.chdir(source_path)
 		subprocess.run(["pipenv", "install", "-r", requirements_file], stdout=subprocess.PIPE)
 
-def create_workspace_folder_structure(*paths):
+def create_folder_structure(*paths):
     
 	for d in (paths):
 		try:
@@ -35,36 +52,6 @@ def create_workspace_folder_structure(*paths):
 
 	if "source" not in os.listdir(proj_path):
 		raise Exception("project folder could not be created")
-
-def create_workspace(proj_path: str, proj_name: str, python_path: str):
-
-	#print("project dir: {}\nfolder name: {}".format(proj_path, proj_name))
-
-	#Populate our dictionary to write
-	vs_code_dict = {
-		"folders": [{
-			"path": "source"
-		}],
-		"settings": {
-			#vs code by default looks for pipenv
-			#"python.pythonPath": python_path
-		}
-	}
-
-	#Create the json file to write
-	json_code_str = json.dumps(vs_code_dict, sort_keys=True, indent=2, separators=(',', ': '))
-
-	#Create the path including the file name
-	file_path_and_name = "{}/{}.code-workspace".format(
-		proj_path, 
-		proj_name
-		)
-
-	# Write json data
-	with open(file_path_and_name,"w") as f:
-		f.write(json_code_str)
-
-	#print("vsc workspace creation complete")
 
 def get_pipenv_python_path(source_path: str):
 	#Gets the python virtual enviroment path
@@ -76,10 +63,6 @@ def get_pipenv_python_path(source_path: str):
 	python_path = result.stdout.decode("utf-8").replace("\n","")
 
 	return python_path
-
-def create_git_repo(proj_path: str):
-    raise NotImplementedError
-
 
 def title_text(string_to_title, title_bar_length=15):
     print("\n{1}\n{0}\n{1}".format(string_to_title, "*"*title_bar_length))
@@ -115,15 +98,26 @@ if __name__ == "__main__":
 	###########
 	#  Paths  #
 	###########
-	
-	file_path = os.path.realpath(__file__)
-	base_path = "{}/../managed_projects".format(
-		os.path.dirname(file_path))
+
+
+	#full path of the directory containing 
+	manager_directory = os.path.dirname(os.path.realpath(__file__))
+	print(manager_directory)
+
+	base_path = "{}/managed_projects".format(
+		os.path.dirname(manager_directory))
+	print(base_path)
+
 	proj_path = "{}/{}".format(base_path, args.name)
+	print(proj_path)
+
 	source_path = "{}/{}".format(proj_path, "source")
-	
+	print(source_path)
+
+
+
 	# create folder structure
-	create_workspace_folder_structure(
+	create_folder_structure(
 		base_path,
 		proj_path,
 		source_path
@@ -136,9 +130,11 @@ if __name__ == "__main__":
 
 	# Create the vs code workspace
 	title_text("Creating workspace")
-	create_workspace(proj_path, args.name, python_path)
+	import workspace_maker
+	workspace_maker.create_workspace(proj_path, args.name, python_path)
 
 	# Create git repo
 	if args.git:
+		import git
 		print("One day I will be able to create your glorious git repo")
-		create_git_repo(proj_path)
+		git.create_git_repo(proj_path)
