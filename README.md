@@ -9,7 +9,8 @@ create_env.sh
 
     *To create a new project run the following command with [project name] replaced with a string of the project name you wish to create that has the same naming restrictions as a directory:
 
-        >bash source/create_project.sh [project name]
+        >bash project [project name]
+
 
 create_vsc_workspace.py
 
@@ -27,4 +28,4 @@ create_vsc_workspace.py
 
     *to create a python project in the managed_projects directory run: 
     
-        >python source/create_vsc_workspace.py [projectname]
+        >python source/manage_project.py [projectname]

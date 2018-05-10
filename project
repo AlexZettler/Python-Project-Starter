@@ -1,0 +1,29 @@
+:<<"::CMDLITERAL"
+@ECHO OFF
+GOTO :CMDSCRIPT
+::CMDLITERAL
+
+
+if :; then
+
+  if [[ ! $(pip freeze) = *"pipenv"* ]]; then
+    pip install pipenv
+  fi
+
+  cd "source"
+  if [ ! -f Pipfile ]; then
+    pipenv --python 3.6
+  fi
+
+  pythonpath=$(pipenv --py)
+  projectmanager="manage_project.py"
+
+  $pythonpath $projectmanager $@
+
+fi
+
+exit 1
+
+
+:CMDSCRIPT
+ECHO Welcome to %COMSPEC%
