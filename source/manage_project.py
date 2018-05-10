@@ -84,6 +84,10 @@ if __name__ == "__main__":
 		type=str,
 		help='A required string for the project name')
 	
+		# Switch for git initialization
+	parser.add_argument('--vcws', action='store_true',
+		help='Add to initialize a vs code workspace')
+
 	# Switch for git initialization
 	parser.add_argument('--git', action='store_true',
 		help='Add to initialize a git repository')
@@ -129,9 +133,10 @@ if __name__ == "__main__":
 	python_path = get_pipenv_python_path(source_path)
 
 	# Create the vs code workspace
-	title_text("Creating workspace")
-	import workspace_maker
-	workspace_maker.create_workspace(proj_path, args.name, python_path)
+	if args.vcws:
+		import workspace_maker
+		title_text("Creating workspace")
+		workspace_maker.create_workspace(proj_path, args.name, python_path)
 
 	# Create git repo
 	if args.git:
