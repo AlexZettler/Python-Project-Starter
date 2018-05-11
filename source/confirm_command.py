@@ -3,19 +3,20 @@ VALID_TRUE = ["yes", "y", "true", "t"]
 VALID_FALSE = ["no", "n", "false", "f"]
 
 
-def execute_command_arter_verification(message: str, completed_message: str, incomplete_message: str, command, *args, **kwargs):
+def execute_command_after_verification(message: str, completed_message: str, incomplete_message: str, command, *args, **kwargs):
     valid_resp = False
 
     while not valid_resp:
 
         resp = input(message).lower()
-        if VALID_TRUE in resp:
+
+        if resp in VALID_TRUE:
             valid_resp = True
             command(args, kwargs)
             print(completed_message)
 
-        elif VALID_TRUE in resp:
-            VALID_FALSE = True
+        elif resp in VALID_FALSE:
+            valid_resp = True
             print(incomplete_message)
         else:
             print("""unknown command, please try again.
