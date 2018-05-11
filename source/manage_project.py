@@ -40,8 +40,41 @@ class Project(object):
             GitProject.__init__(self)
 
 
+<<<<<<< HEAD
 class PipenvProject(Project):
 
+=======
+class VSCodeWorkspaceProject(Project):
+    def __init__(self):
+
+        if self.check_for_workspace():
+            confirm_command.execute_command_arter_verification(
+                "I would hate to overwrite your vs code workspace, are you sure you want to create a new one?",
+                "vs code workspace was created",
+                "vs code workspace was not created",
+                self.make_vs_code_workspace
+            )
+        else:
+            self.make_vs_code_workspace()
+
+    def check_for_workspace(self):
+
+        try:
+            with open(workspace_maker.get_workspace_path(self.proj_path, self.name), "r") as f:
+                return True
+
+        except FileNotFoundError:
+            return False
+
+    def make_vs_code_workspace(self, *args, **kwargs):
+
+        title_text("Creating workspace")
+        workspace_maker.create_workspace(proj_path, self.name)
+
+
+class PipenvProject(Project):
+
+>>>>>>> BrokenButProgress
     REQUIREMENTS_FILE = "requirements.txt"
 
     def __init__(self):
@@ -63,6 +96,7 @@ class PipenvProject(Project):
 
         # create the working pipenv
         subprocess.run(["pipenv", "--python", "3.6"], stdout=subprocess.PIPE)
+<<<<<<< HEAD
 
         # run platform specific instructions
         if platform.system() == "Windows":
@@ -124,6 +158,41 @@ class VSCodeWorkspaceProject(Project):
 
         title_text("Creating workspace")
         workspace_maker.create_workspace(proj_path, self.name)
+=======
+
+        # run platform specific instructions
+        if platform.system() == "Windows":
+            pass
+        elif platform.system() == "Linux":
+            pass
+
+    def get_pipenv_python_path(self):
+        # Gets the python virtual enviroment path
+
+        os.chdir(self.source_path)
+        result = subprocess.run(["pipenv", "--py"], stdout=subprocess.PIPE)
+
+        # formats the path correctly
+        python_path = result.stdout.decode("utf-8").replace("\n", "")
+        return python_path
+
+    def install_requirements(self):
+        """
+        Installs the requirements from the requirements file if it exists
+
+        :param proj_path:str:
+            The path to the project folder
+        """
+
+        os.chdir(self.proj_path)
+        if self.REQUIREMENTS_FILE in os.listdir():
+
+            # go to the source folder and install pipenv requirements
+            os.chdir(self.source_path)
+            subprocess.run(
+                ["pipenv", "install", "-r", self.REQUIREMENTS_FILE],
+                stdout=subprocess.PIPE)
+>>>>>>> BrokenButProgress
 
 
 class GitProject(Project):
