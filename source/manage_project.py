@@ -9,13 +9,10 @@ import workspace_maker
 import git
 
 
-class Project(object):
+class BaseProject(object):
     def __init__(self,
                  name: str,
-                 proj_path: str,
-                 pip_env_proj: bool,
-                 git_proj: bool,
-                 vs_code_workspace: bool
+                 proj_path: str
                  ):
 
         self.name = name
@@ -30,22 +27,14 @@ class Project(object):
             self.source_path
         )
 
-        if pip_env_proj:
-            PipenvProject.__init__(self)
 
-        if vs_code_workspace:
-            VSCodeWorkspaceProject.__init__(self)
+class PipenvProject(BaseProject):
 
-        if git_proj:
-            GitProject.__init__(self)
-
-
-class PipenvProject(Project):
-	
     REQUIREMENTS_FILE = "requirements.txt"
 
     def __init__(self):
-        #super.__init__(self, name, proj_path)
+        super().__init__()
+
         title_text("Creating pip enviroment")
         self.create_pip_env()
         self.python_path = self.get_pipenv_python_path()
@@ -98,9 +87,9 @@ class PipenvProject(Project):
                 stdout=subprocess.PIPE)
 
 
-class VSCodeWorkspaceProject(Project):
+class VSCodeWorkspaceProject(BaseProject):
     def __init__(self):
-
+        super().__init__()
         if self.check_for_workspace():
             confirm_command.execute_command_arter_verification(
                 "I would hate to overwrite your vs code workspace, are you sure you want to create a new one?",
@@ -126,11 +115,36 @@ class VSCodeWorkspaceProject(Project):
         workspace_maker.create_workspace(proj_path, self.name)
 
 
-class GitProject(Project):
+class GitProject(BaseProject):
+
     def __init__(self):
+        super().__init__()
         print("One day I will be able to create your glorious git repo")
         git.create_git_repo(proj_path)
 
+
+class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
+
+    def __init__(self,
+                 name: str,
+                 proj_path: str,
+                 pip_env_proj: bool,
+                 git_proj: bool,
+                 vs_code_workspace: bool):
+
+        if pip_env_proj:
+            super(PipenvProject).__init__()
+
+        if vs_code_workspace:
+            super(VSCodeWorkspaceProject, self).__init__()
+
+        if git_proj:
+            super(GitProject, self).__init__()
+
+
+###
+#  Some misc functions
+###
 
 def create_folder_structure(*paths):
 
@@ -209,7 +223,7 @@ if __name__ == "__main__":
     #  Create our object  #
     #######################
 
-    working_project = Project(
+    working_project = BaseProject(
         name=args.name,
         proj_path=proj_path,
         pip_env_proj=args.pipenv,
