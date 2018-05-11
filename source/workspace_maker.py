@@ -1,4 +1,16 @@
 import json
+import os
+
+def create_folder_structure(proj_path, *paths):
+	
+    for d in (paths):
+        try:
+            os.mkdir(d)
+        except FileExistsError:
+            pass
+
+    if "source" not in os.listdir(proj_path):
+        raise Exception("project folder could not be created")
 
 def create_workspace(proj_path: str, proj_name: str):
     

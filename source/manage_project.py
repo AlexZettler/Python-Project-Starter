@@ -24,10 +24,13 @@ class BaseProject(object):
         print(self.source_path)
 
         # create folder structure
-        create_folder_structure(
-            base_path,
+        workspace_maker.create_folder_structure(
             self.proj_path,
-            self.source_path
+            *(
+                base_path,
+                self.proj_path,
+                self.source_path
+            )
         )
 
 
@@ -168,18 +171,6 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
 ###
 #  Some misc functions
 ###
-
-
-def create_folder_structure(*paths):
-
-    for d in (paths):
-        try:
-            os.mkdir(d)
-        except FileExistsError:
-            pass
-
-    if "source" not in os.listdir(proj_path):
-        raise Exception("project folder could not be created")
 
 
 def title_text(string_to_title, title_bar_length=15):
