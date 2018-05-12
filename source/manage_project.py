@@ -1,14 +1,18 @@
 # Bundled
 import os
-import subprocess
+
 import platform
 import sys
 import argparse
 
 # Local files
 import confirm_command
-import workspace_maker
-import git
+
+#Extention files
+from project_extentions.git_project import GitProject
+from project_extentions.pipenv_project import PipenvProject
+from project_extentions.vscode_workspace_project import VSCodeWorkspaceProject
+
 
 global INDENTATION_LEVEL
 INDENTATION_LEVEL = 0
@@ -40,7 +44,7 @@ class BaseProject(object):
         # print(self.source_path)
 
         # create folder structure
-        workspace_maker.create_folder_structure(
+        create_folder_structure(
             self.proj_path,
             *(
                 base_path,
@@ -60,153 +64,68 @@ class ProjectExtention(BaseProject):
     To create an extention, call the _create method to verfiy the
     """
 
-    def __init__(self,
-                 name: str,
-                 proj_path: str):
+    def __init__(self,name: str,proj_path: str):
 
         super().__init__(name, proj_path)
 
         '''
-        print("****")
-        # print base class names
-        for base in self.__class__.__bases__:
-            print("base: {}".format(base.__name__))
+            print("****")
+            # print base class names
+            for base in self.__class__.__bases__:
+                print("base: {}".format(base.__name__))
         '''
 
     def _create(self):
+        """
+        An abstract method for actions to:
+            create a new project extention of this type
+        """
         raise NotImplementedError
+
+    def _check_for_existing(self):
+        """
+        An abstract method for actions to:
+            check if a project of this type has already been created
+        """
+        raise NotImplementedError
+
+    def _on_existing_create_new(self):
+        """
+        An abstract method for actions to:
+            handle a project of this type already existing
+        """
+        raise NotImplementedError
+
 
     def create(self, extention_class):
         
         '''print("""
-        extention type is: {}
-        self type is: {}
+            extention type is: {}
+            self type is: {}
 
-        """.format(
-            extention_class,
-            self.__class__
+            """.format(
+                extention_class,
+                self.__class__
         ))'''
 
         if issubclass(extention_class, ProjectExtention):
 
-            print_indented(
-                "creating subproject: {}".format(extention_class))
+            if not extention_class._check_for_existing(self):
 
-            extention_class._create(self)
-            self.project_extentions.add(extention_class.__name__)
+                print(get_indent("creating subproject: {}".format(extention_class)))
+                extention_class._create(self)
+                self.project_extentions.add(extention_class.__name__)
 
+            else:
+                if extention_class._on_existing_create_new(self):
+                    print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
+                    extention_class._create(self)
+                    self.project_extentions.add(extention_class.__name__)
+
+                else:
+                    print(get_indent("Permission denied from subproject to create over existing: {}".format(extention_class)))
         else:
             raise Exception("Extention must extend ProjectExtention")
-
-class PipenvProject(ProjectExtention):
-
-    # The requirements file located in the project root
-    REQUIREMENTS_FILE = "requirements.txt"
-
-    def __init__(self, name: str,
-                 proj_path: str):
-        super().__init__(name, proj_path)
-
-        # title_text("Creating pip enviroment")
-        # self.create_pip_env()
-        # self.python_path = self.get_pipenv_python_path()
-
-    def _create(self):
-        """
-        Create a pipenv enviroment in the given directory
-
-        :param proj_path:str:
-            The path to the project source folder
-        """
-
-        # Change directory
-        os.chdir(self.source_path)
-
-        # create the working pipenv
-        subprocess.run(["pipenv", "--python", "3.6"], stdout=subprocess.PIPE)
-
-        # run platform specific instructions
-        if platform.system() == "Windows":
-            pass
-        elif platform.system() == "Linux":
-            pass
-
-    def get_pipenv_python_path(self):
-        """
-        Returns the path to the python executable
-            :param self:
-        """
-
-        # cd into source directory
-        os.chdir(self.source_path)
-        result = subprocess.run(["pipenv", "--py"], stdout=subprocess.PIPE)
-
-        # formats the path correctly
-        python_path = result.stdout.decode("utf-8").replace("\n", "")
-        return python_path
-
-    def install_requirements(self):
-        """
-        Installs the requirements from the requirements file if it exists
-
-        :param proj_path:str:
-            The path to the project folder
-        """
-
-        os.chdir(self.proj_path)
-        if self.REQUIREMENTS_FILE in os.listdir():
-
-            # go to the source folder and install pipenv requirements
-            os.chdir(self.source_path)
-            subprocess.run(
-                ["pipenv", "install", "-r", self.REQUIREMENTS_FILE],
-                stdout=subprocess.PIPE)
-        else:
-            print("No requirements found")
-
-
-class VSCodeWorkspaceProject(ProjectExtention):
-    def __init__(self,
-                 name: str,
-                 proj_path: str,):
-        super().__init__(name, proj_path)
-
-    def _create(self):
-        if self.check_for_workspace():
-            confirm_command.execute_command_after_verification(
-                """{0}I would hate to overwrite your vs code workspace,\n{0}are you sure you want to create a new one?""".format(
-                    " "*INDENTATION_LEVEL*TABS_PER_INDENT),
-                "{}vs code workspace was created".format(
-                    " "*INDENTATION_LEVEL*TABS_PER_INDENT),
-                "{}vs code workspace was not created".format(
-                    " "*INDENTATION_LEVEL*TABS_PER_INDENT),
-                self.make_vs_code_workspace
-            )
-        else:
-            self.make_vs_code_workspace()
-
-    def check_for_workspace(self):
-
-        try:
-            with open(workspace_maker.get_workspace_path(self.proj_path, self.name), "r") as f:
-                return True
-
-        except FileNotFoundError:
-            return False
-
-    def make_vs_code_workspace(self, *args, **kwargs):
-        workspace_maker.create_workspace(proj_path, self.name)
-
-
-class GitProject(ProjectExtention):
-
-    def __init__(self, name: str, proj_path: str,):
-        super().__init__(name, proj_path)
-
-    def _create(self):
-        print("One day I will be able to create your glorious git repo")
-        git.create_git_repo(proj_path)
-
 
 class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
     """
@@ -219,7 +138,7 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
 
         # Map the flags to the creation methods
         project_creation_flags = {
-            "git_proj": GitProject,
+            "git_proj":  GitProject,
             "pip_env_proj": PipenvProject,
             "vs_code_workspace": VSCodeWorkspaceProject
         }
@@ -249,28 +168,28 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
 
                 else:
                     pass
-                    #print_indented("{} is not being created".format(subproject.__name__))
+                    #print(get_indent("{} is not being created".format(subproject.__name__))
 
             # If the flag is not a valid project type
             except KeyError:
-                print_indented("Invalid project flag: {}".format(flag))
+                print(get_indent("Invalid project flag: {}".format(flag)))
 
         INDENTATION_LEVEL -= 1
 
         print_indent_title("Listing projects created")
-        print_indented("\n".join(self.project_extentions))
+        print(get_indent("\n".join(self.project_extentions)))
 
 ###############################
 #  Some misc print functions  #
 ###############################
 
 
-def print_indented(text_str):
+def get_indent(text_str):
     """
     Prints a formatted message to the console
         -indented properly
     """
-    print("{1}{0}".format(text_str, " "*(INDENTATION_LEVEL*TABS_PER_INDENT)))
+    return "{1}{0}".format(text_str, " "*(INDENTATION_LEVEL*TABS_PER_INDENT))
 
 
 def print_indent_title(title_str):
@@ -279,12 +198,27 @@ def print_indent_title(title_str):
         -indented properly
         -surrounded with asterics
     """
-    print("{2}{1}\n{2}{0}\n{2}{1}".format(
+    print("{1}\n{0}\n{1}".format(
         "*  {}  *".format(title_str),
-        "*"*(len(title_str)+6),
-        " "*(INDENTATION_LEVEL*TABS_PER_INDENT)
+        get_indent("*"*(len(title_str)+6)),
     ))
 
+###############################
+#  Other misc functions  #
+###############################
+
+def create_folder_structure(proj_path, *paths):
+    """
+    # todo add this as a relative path creator
+    """
+    for d in (paths):
+        try:
+            os.mkdir(d)
+        except FileExistsError:
+            pass
+
+    if "source" not in os.listdir(proj_path):
+        raise Exception("project folder could not be created")
 
 
 #################################
