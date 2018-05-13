@@ -1,4 +1,4 @@
-from manage_project import ProjectExtention
+from manage_project import ProjectExtention, UnopenableProject
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
 import confirm_command
@@ -10,6 +10,12 @@ class VSCodeWorkspaceProject(ProjectExtention):
 
 	def _create(self):
 		self.make_vs_code_workspace()
+
+	def _load(self):
+		pass
+
+	def _open(self):
+		raise UnopenableProject()
 
 	def _check_for_existing(self):
 		try:

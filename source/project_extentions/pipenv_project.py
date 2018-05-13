@@ -1,8 +1,10 @@
 from manage_project import ProjectExtention
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
+#Project verify question
 import confirm_command
 
+#Bundled
 import subprocess
 import os
 import platform

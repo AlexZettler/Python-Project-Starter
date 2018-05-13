@@ -1,6 +1,5 @@
 # Bundled
 import os
-
 import platform
 import sys
 import argparse
@@ -59,7 +58,17 @@ def create_folder_structure(proj_path, *paths):
     if "source" not in os.listdir(proj_path):
         raise Exception("project source folder could not be created")
 
+class UnopenableProject(Exception):
+    def __init__(self):
+        super().__init__(self, "This project does not support application opening")
 
+class UnloadableProject(Exception):
+    """
+    This exception should only be raised when the project detects an issue with the project being loaded
+    """
+
+    def __init__(self):
+        super().__init__(self, "This project could not be loaded")
 class BaseProject(object):
     """
     The base class that ProjectExtention classes inherit from
@@ -127,6 +136,9 @@ class ProjectExtention(manage_project.BaseProject):
         """
         raise NotImplementedError
 
+    def _open(self):
+        raise UnopenableProject()
+
     def _check_for_existing(self):
         """
         An abstract method for actions to:
@@ -146,38 +158,59 @@ class ProjectExtention(manage_project.BaseProject):
         A method responsable for creating subclasses
         """
 
+        #Confirm that the classed passed is a subclass of ProjectExtention
         if issubclass(extention_class, manage_project.ProjectExtention):
 
+            #If there is no previously existing Project
             if not extention_class._check_for_existing(self):
 
-                print(get_indent("creating subproject: {}".format(extention_class)))
+                print(get_indent("creating new subproject: {}".format(extention_class)))
                 extention_class._create(self)
                 self.project_extentions.add(extention_class.__name__)
 
+
+            #If there is an existing project of this type created
             else:
                 
                 #Try to load attributes from the extention
                 try:
                     extention_class._load(self)
+                    self.project_extentions.add(extention_class.__name__)
+
+                #If th project was not able to be loaded
+                #This is unexpected behavior
+                #todo raise stuff
+                except UnloadableProject as e:
+                    print(get_indent("The project could not be loaded correctly"))
+                    print(e)
 
                 #If attributes could not be loaded
                 except NotImplementedError as e:
                     print(get_indent("_load was not implemented. This should not be the case."))
                     raise e
 
+                #todo implement this code as an option if any previous errors were caught
                 #If other exception was caught, give option to overwrite the extention
                 except Exception as e:
                     if extention_class._on_existing_create_new(self):
-                        print(get_indent(
-                            "Permission granted from subproject to create over existing: {}".format(extention_class)))
+                        print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
                         extention_class._create(self)
-                        self.project_extentions.add(extention_class.__name__)
+                        
+
+                        # Try to open the project and pass silently if the project was not meant to be opened
+                        try:
+                            extention_class._open(self)
+                        except UnopenableProject:
+                            print(get_indent("Project is npt meant to be opened"))
+                            pass
 
                     else:
                         print(get_indent(
                             "Permission denied from subproject to create over existing: {}".format(extention_class)))
                         raise e
 
+
+        # If the extention class passed is a subclass of ProjectExtention
         else:
             raise Exception("Extention must extend ProjectExtention")
 
@@ -227,9 +260,10 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
                     ProjectExtention.create(self, subproject)
                     INDENTATION_LEVEL -= 1
 
+                #If the project load arguement is not in the list of valid projects to create
                 else:
                     pass
-                    # print(get_indent("{} is not being created".format(subproject.__name__))
+                    print(get_indent("{} is not being created".format(subproject.__name__)))
 
             # If the flag is not a valid project type
             except KeyError:
