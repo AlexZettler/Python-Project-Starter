@@ -5,20 +5,59 @@ import platform
 import sys
 import argparse
 
+
 # Local files
 import confirm_command
 
-#Extention files
-from project_extentions.git_project import GitProject
-from project_extentions.pipenv_project import PipenvProject
-from project_extentions.vscode_workspace_project import VSCodeWorkspaceProject
-
+#must import this file so that classes have the same namespace as projects that extend it 
+import manage_project
 
 global INDENTATION_LEVEL
 INDENTATION_LEVEL = 0
 
 global TABS_PER_INDENT
 TABS_PER_INDENT = 4
+
+
+###############################
+#  Some misc print functions  #
+###############################
+
+
+def get_indent(text_str):
+    """
+    Prints a formatted message to the console
+        -indented properly
+    """
+    return "{1}{0}".format(text_str, " "*(INDENTATION_LEVEL*TABS_PER_INDENT))
+
+
+def print_indent_title(title_str):
+    """
+    Prints a formatted title to the console
+        -indented properly
+        -surrounded with asterics
+    """
+    print("{1}\n{0}\n{1}".format(
+        get_indent("*  {}  *".format(title_str)),
+        get_indent("*"*(len(title_str)+6)),
+    ))
+
+###############################
+#  Other misc functions  #
+###############################
+
+
+def create_folder_structure(proj_path, *paths):
+    """
+    Creates a folder structure fiven by paths
+    """
+    import pathlib
+    for d in paths:
+        pathlib.Path(d).mkdir(parents=True, exist_ok=True)
+
+    if "source" not in os.listdir(proj_path):
+        raise Exception("project source folder could not be created")
 
 
 class BaseProject(object):
@@ -30,7 +69,7 @@ class BaseProject(object):
         directory,
         source path
 
-    And creates the folder structure for the project 
+    And creates the folder structure for the project
     """
 
     def __init__(self,
@@ -47,9 +86,8 @@ class BaseProject(object):
         create_folder_structure(
             self.proj_path,
             *(
-                base_path,
                 self.proj_path,
-                self.source_path
+                self.source_path,
             )
         )
 
@@ -57,28 +95,35 @@ class BaseProject(object):
         self.project_extentions = set()
 
 
-class ProjectExtention(BaseProject):
+class ProjectExtention(manage_project.BaseProject):
     """
     This is an abstract class for all project extentions.
 
     To create an extention, call the _create method to verfiy the
     """
 
-    def __init__(self,name: str,proj_path: str):
+    def __init__(self, name: str, proj_path: str):
 
         super().__init__(name, proj_path)
 
         '''
-            print("****")
-            # print base class names
-            for base in self.__class__.__bases__:
-                print("base: {}".format(base.__name__))
+        print("****")
+        # print base class names
+        for base in self.__class__.__bases__:
+            print("base: {}".format(base.__name__))
         '''
 
     def _create(self):
         """
         An abstract method for actions to:
             create a new project extention of this type
+        """
+        raise NotImplementedError
+
+    def _load(self):
+        """
+        An abstract method for actions to:
+            load attributes from an existing project extention
         """
         raise NotImplementedError
 
@@ -96,19 +141,12 @@ class ProjectExtention(BaseProject):
         """
         raise NotImplementedError
 
-
     def create(self, extention_class):
-        
-        '''print("""
-            extention type is: {}
-            self type is: {}
+        """
+        A method responsable for creating subclasses
+        """
 
-            """.format(
-                extention_class,
-                self.__class__
-        ))'''
-
-        if issubclass(extention_class, ProjectExtention):
+        if issubclass(extention_class, manage_project.ProjectExtention):
 
             if not extention_class._check_for_existing(self):
 
@@ -117,15 +155,38 @@ class ProjectExtention(BaseProject):
                 self.project_extentions.add(extention_class.__name__)
 
             else:
-                if extention_class._on_existing_create_new(self):
-                    print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
-                    extention_class._create(self)
-                    self.project_extentions.add(extention_class.__name__)
+                
+                #Try to load attributes from the extention
+                try:
+                    extention_class._load(self)
 
-                else:
-                    print(get_indent("Permission denied from subproject to create over existing: {}".format(extention_class)))
+                #If attributes could not be loaded
+                except NotImplementedError as e:
+                    print(get_indent("_load was not implemented. This should not be the case."))
+                    raise e
+
+                #If other exception was caught, give option to overwrite the extention
+                except Exception as e:
+                    if extention_class._on_existing_create_new(self):
+                        print(get_indent(
+                            "Permission granted from subproject to create over existing: {}".format(extention_class)))
+                        extention_class._create(self)
+                        self.project_extentions.add(extention_class.__name__)
+
+                    else:
+                        print(get_indent(
+                            "Permission denied from subproject to create over existing: {}".format(extention_class)))
+                        raise e
+
         else:
             raise Exception("Extention must extend ProjectExtention")
+
+
+# Extention files
+from project_extentions.git_project import GitProject
+from project_extentions.pipenv_project import PipenvProject
+from project_extentions.vscode_workspace_project import VSCodeWorkspaceProject
+
 
 class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
     """
@@ -168,7 +229,7 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
 
                 else:
                     pass
-                    #print(get_indent("{} is not being created".format(subproject.__name__))
+                    # print(get_indent("{} is not being created".format(subproject.__name__))
 
             # If the flag is not a valid project type
             except KeyError:
@@ -179,46 +240,6 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
         print_indent_title("Listing projects created")
         print(get_indent("\n".join(self.project_extentions)))
 
-###############################
-#  Some misc print functions  #
-###############################
-
-
-def get_indent(text_str):
-    """
-    Prints a formatted message to the console
-        -indented properly
-    """
-    return "{1}{0}".format(text_str, " "*(INDENTATION_LEVEL*TABS_PER_INDENT))
-
-
-def print_indent_title(title_str):
-    """
-    Prints a formatted title to the console
-        -indented properly
-        -surrounded with asterics
-    """
-    print("{1}\n{0}\n{1}".format(
-        "*  {}  *".format(title_str),
-        get_indent("*"*(len(title_str)+6)),
-    ))
-
-###############################
-#  Other misc functions  #
-###############################
-
-def create_folder_structure(proj_path, *paths):
-    """
-    # todo add this as a relative path creator
-    """
-    for d in (paths):
-        try:
-            os.mkdir(d)
-        except FileExistsError:
-            pass
-
-    if "source" not in os.listdir(proj_path):
-        raise Exception("project folder could not be created")
 
 
 #################################

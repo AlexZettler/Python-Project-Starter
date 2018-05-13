@@ -20,7 +20,7 @@ class VSCodeWorkspaceProject(ProjectExtention):
 			return False
 
 	def _on_existing_create_new(self):
-		confirm_command.give_permission_after_verification(
+		return confirm_command.give_permission_after_verification(
 			"{}\n{}".format(
 				get_indent("I would hate to overwrite your vs code workspace,"),
 				get_indent("are you sure you want to create a new one?"),

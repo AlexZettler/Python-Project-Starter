@@ -1,7 +1,7 @@
 from manage_project import ProjectExtention
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
-from confirm_command import *
+import confirm_command
 
 import subprocess
 import os
@@ -9,7 +9,7 @@ import platform
 
 
 class PipenvProject(ProjectExtention):
-	
+
     # The requirements file located in the project root
     REQUIREMENTS_FILE = "requirements.txt"
 
@@ -40,6 +40,39 @@ class PipenvProject(ProjectExtention):
             pass
         elif platform.system() == "Linux":
             pass
+
+    def _check_for_existing(self):
+        """
+        check if a project of this type has already been created
+        """
+        os.chdir(self.source_path)
+        return "Pipfile" in os.listdir()
+
+    def _on_existing_create_new(self):
+        """
+        handle a project of this type already existing
+        """
+
+        # check if a requirements file exists
+        os.chdir(self.proj_path)
+        if self.REQUIREMENTS_FILE in os.listdir():
+            print("requirements file found!")
+            if confirm_command.give_permission_after_verification(
+                "Found {} in your project folder, would you like to recreate your pipenv?".format(
+                    self.REQUIREMENTS_FILE),
+                "reinstalling pipenv",
+                    "passing"):
+                return True
+
+        elif confirm_command.give_permission_after_verification(
+            "Could not find a {} in your project folder! Would you like to recreate your pipenv?".format(
+                self.REQUIREMENTS_FILE),
+            "reinstalling pipenv",
+                "passing"):
+            return True
+
+        else:
+            return False
 
     def get_pipenv_python_path(self):
         """
