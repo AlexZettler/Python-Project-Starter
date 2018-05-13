@@ -1,7 +1,7 @@
-from manage_project import ProjectExtention
+from manage_project import ProjectExtention, UnopenableProject
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
-class TemplateProject():
+class TemplateProject(ProjectExtention):
     def _create(self):
         pass
 

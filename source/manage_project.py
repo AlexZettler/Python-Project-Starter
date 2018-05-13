@@ -81,9 +81,7 @@ class BaseProject(object):
     And creates the folder structure for the project
     """
 
-    def __init__(self,
-                 name: str,
-                 proj_path: str):
+    def __init__(self,name: str,proj_path: str):
 
         self.name = name
         self.proj_path = proj_path
@@ -122,6 +120,10 @@ class ProjectExtention(manage_project.BaseProject):
             print("base: {}".format(base.__name__))
         '''
 
+    ######################################
+    #  Methods that must be implemented  #
+    ######################################
+
     def _create(self):
         """
         An abstract method for actions to:
@@ -153,10 +155,14 @@ class ProjectExtention(manage_project.BaseProject):
         """
         raise NotImplementedError
 
+
+
     def create(self, extention_class):
         """
         A method responsable for creating subclasses
         """
+
+        created_sucessfully = False
 
         #Confirm that the classed passed is a subclass of ProjectExtention
         if issubclass(extention_class, manage_project.ProjectExtention):
@@ -166,54 +172,69 @@ class ProjectExtention(manage_project.BaseProject):
 
                 print(get_indent("creating new subproject: {}".format(extention_class)))
                 extention_class._create(self)
-                self.project_extentions.add(extention_class.__name__)
-
+                created_sucessfully = True
 
             #If there is an existing project of this type created
             else:
-                
+
                 #Try to load attributes from the extention
                 try:
                     extention_class._load(self)
-                    self.project_extentions.add(extention_class.__name__)
+                    created_sucessfully = True
 
-                #If th project was not able to be loaded
+                #If the project was not able to be loaded
                 #This is unexpected behavior
-                #todo raise stuff
                 except UnloadableProject as e:
                     print(get_indent("The project could not be loaded correctly"))
                     print(e)
+                    created_sucessfully = False
 
                 #If attributes could not be loaded
                 except NotImplementedError as e:
-                    print(get_indent("_load was not implemented. This should not be the case."))
+                    print(get_indent("_load was not implemented. This should not be the case, have it raise UnloadableProject."))
+                    created_sucessfully = False
                     raise e
 
                 #todo implement this code as an option if any previous errors were caught
-                #If other exception was caught, give option to overwrite the extention
+                #If other exception was caught
                 except Exception as e:
+
+                    #todo permission granted here eventually through a permission message
+                    #If an unknown exception was caught, give option to overwrite previous project extention
                     if extention_class._on_existing_create_new(self):
-                        print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
-                        extention_class._create(self)
-                        
+                        if confirm_command.give_permission_after_verification(
+                            "Subproject granted extention overwrite. Would you like to proceed?",
+                            "Overwriting extention",
+                            "Not overwriting..."):
+                                print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
+                                extention_class._create(self)
+                                created_sucessfully = True
 
-                        # Try to open the project and pass silently if the project was not meant to be opened
-                        try:
-                            extention_class._open(self)
-                        except UnopenableProject:
-                            print(get_indent("Project is npt meant to be opened"))
-                            pass
+                        else:
+                            print(get_indent("Permission denied as per permission was denied by user."))
 
+                    #Did not retrieve permission from the extention to overwrite
                     else:
                         print(get_indent(
                             "Permission denied from subproject to create over existing: {}".format(extention_class)))
                         raise e
 
 
+                # Check if the project was created, or loaded
+                if created_sucessfully:
+                    self.project_extentions.add(extention_class.__name__)
+
+                    # Try to open the project and pass silently if the project was not meant to be opened
+                    try:
+                        extention_class._open(self)
+
+                    except manage_project.UnopenableProject:
+                        print(get_indent("Project is not meant to be opened by external tool"))
+
+
         # If the extention class passed is a subclass of ProjectExtention
         else:
             raise Exception("Extention must extend ProjectExtention")
-
 
 # Extention files
 from project_extentions.git_project import GitProject
@@ -227,7 +248,13 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
     """
 
     def __init__(self, name: str, proj_path: str, **kwargs):
-
+        """
+        The 
+        
+        Arguments:
+            name {str} -- [The name of the project]
+            proj_path {str} -- [The path to the project]
+        """
         super().__init__(name, proj_path)
 
         # Map the flags to the creation methods
