@@ -1,23 +1,30 @@
+from manage_project import ProjectExtention
+from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
 VALID_TRUE = ["yes", "y", "true", "t"]
 VALID_FALSE = ["no", "n", "false", "f"]
 
 
-def execute_command_after_verification(message: str, completed_message: str, incomplete_message: str, command, *args, **kwargs):
-    valid_resp = False
+def give_permission_after_verification(
+        message: str,
+        completed_message: str,
+        incomplete_message: str, *args, **kwargs):
+    """
+    Creates a project 
 
-    while not valid_resp:
+    """
 
-        resp = input(message).lower()
+    while True:
+
+        resp = input(get_indent(message)).lower()
 
         if resp in VALID_TRUE:
-            valid_resp = True
-            command(args, kwargs)
             print(completed_message)
+            return True
 
         elif resp in VALID_FALSE:
-            valid_resp = True
             print(incomplete_message)
+            return False
         else:
             print("""unknown command, please try again.
 				Valid True commands are: {}
