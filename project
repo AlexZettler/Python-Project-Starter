@@ -16,9 +16,9 @@ if :; then
   fi
 
   pythonpath=$(pipenv --py)
-  projectmanager="manage_project.py"
+  manager="manage_project.py"
 
-  $pythonpath $projectmanager $@
+  pipenv run python $manager $@
 
 fi
 
