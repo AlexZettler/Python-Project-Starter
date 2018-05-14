@@ -1,8 +1,12 @@
-from manage_project import ProjectExtention, UnopenableProject
+#global INDENTATION_LEVEL, TABS_PER_INDENT
+
+from manage_project import ProjectExtention, UnopenableProject, UnloadableProject
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
 import confirm_command
 import json
+
+
 
 class VSCodeWorkspaceProject(ProjectExtention):
 	def __init__(self, name: str, proj_path: str,):
@@ -12,27 +16,29 @@ class VSCodeWorkspaceProject(ProjectExtention):
 		self.make_vs_code_workspace()
 
 	def _load(self):
+		"""
+		This method does not need to load anything about the workspace to this class currently
+		however in the future, could verify that the json was able to be parsed corrrectly
+		"""
 		pass
 
 	def _open(self):
+		#todo figure how to run as system default executable
 		raise UnopenableProject()
 
 	def _check_for_existing(self):
+
+		print(get_indent("Checking for existing file"))
 		try:
 			with open(self.get_workspace_path(self.proj_path, self.name), "r") as f:
+				print(get_indent("File read correctly"))
 				return True
 
 		except FileNotFoundError:
 			return False
 
 	def _on_existing_create_new(self):
-		return confirm_command.give_permission_after_verification(
-			"{}\n{}".format(
-				get_indent("I would hate to overwrite your vs code workspace,"),
-				get_indent("are you sure you want to create a new one?"),
-			),
-			get_indent("vs code workspace was created"),
-			get_indent("vs code workspace was not created"))
+		return True
 
 	def make_vs_code_workspace(self, *args, **kwargs):
 		self.create_workspace(self.proj_path, self.name)

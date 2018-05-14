@@ -12,10 +12,10 @@ import confirm_command
 import manage_project
 
 global INDENTATION_LEVEL
-INDENTATION_LEVEL = 0
+manage_project.INDENTATION_LEVEL = 0
 
 global TABS_PER_INDENT
-TABS_PER_INDENT = 4
+manage_project.TABS_PER_INDENT = 4
 
 
 ###############################
@@ -28,7 +28,7 @@ def get_indent(text_str):
     Prints a formatted message to the console
         -indented properly
     """
-    return "{1}{0}".format(text_str, " "*(INDENTATION_LEVEL*TABS_PER_INDENT))
+    return "{1}{0}".format(text_str, " "*(manage_project.INDENTATION_LEVEL*manage_project.TABS_PER_INDENT))
 
 
 def print_indent_title(title_str):
@@ -170,6 +170,7 @@ class ProjectExtention(manage_project.BaseProject):
             #If there is no previously existing Project
             if not extention_class._check_for_existing(self):
 
+                #Subproject 
                 print(get_indent("creating new subproject: {}".format(extention_class)))
                 extention_class._create(self)
                 created_sucessfully = True
@@ -203,15 +204,15 @@ class ProjectExtention(manage_project.BaseProject):
                     #If an unknown exception was caught, give option to overwrite previous project extention
                     if extention_class._on_existing_create_new(self):
                         if confirm_command.give_permission_after_verification(
-                            "Subproject granted extention overwrite. Would you like to proceed?",
+                            "{} granted extention overwrite. Would you like to proceed?".format(extention_class.__name__),
                             "Overwriting extention",
                             "Not overwriting..."):
-                                print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class)))
+                                print(get_indent("Permission granted from subproject to create over existing: {}".format(extention_class.__name__)))
                                 extention_class._create(self)
                                 created_sucessfully = True
 
-                        else:
-                            print(get_indent("Permission denied as per permission was denied by user."))
+                        #else:
+                        #    print(get_indent("Permission denied as per permission was denied by user."))
 
                     #Did not retrieve permission from the extention to overwrite
                     else:
@@ -269,7 +270,7 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
 
         # Reference our global indentation
         global INDENTATION_LEVEL
-        INDENTATION_LEVEL += 1
+        manage_project.INDENTATION_LEVEL += 1
 
         # iterate through flags passed and create the subprojects if so
         for flag, subproject in project_creation_flags.items():
@@ -283,9 +284,9 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
                         subproject.__name__))
 
                     # indent and additional information during creation of subproject
-                    INDENTATION_LEVEL += 1
+                    manage_project.INDENTATION_LEVEL += 1
                     ProjectExtention.create(self, subproject)
-                    INDENTATION_LEVEL -= 1
+                    manage_project.INDENTATION_LEVEL -= 1
 
                 #If the project load arguement is not in the list of valid projects to create
                 else:
@@ -296,7 +297,7 @@ class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
             except KeyError:
                 print(get_indent("Invalid project flag: {}".format(flag)))
 
-        INDENTATION_LEVEL -= 1
+        manage_project.INDENTATION_LEVEL -= 1
 
         print_indent_title("Listing projects created")
         print(get_indent("\n".join(self.project_extentions)))
