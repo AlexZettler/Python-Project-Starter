@@ -1,10 +1,10 @@
 from manage_project import ProjectExtention, UnopenableProject
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
-#Project verify question
+# Project verify question
 import confirm_command
 
-#Bundled
+# Bundled
 import subprocess
 import os
 import platform
@@ -15,8 +15,7 @@ class PipenvProject(ProjectExtention):
     # The requirements file located in the project root
     REQUIREMENTS_FILE = "requirements.txt"
 
-    def __init__(self, name: str,
-                 proj_path: str):
+    def __init__(self, name: str, proj_path: str):
         super().__init__(name, proj_path)
 
         # title_text("Creating pip enviroment")
@@ -42,6 +41,12 @@ class PipenvProject(ProjectExtention):
             pass
         elif platform.system() == "Linux":
             pass
+
+    def _load(self):
+        pass
+
+    def _open(self):
+        raise UnopenableProject()
 
     def _check_for_existing(self):
         """
