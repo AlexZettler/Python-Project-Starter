@@ -332,6 +332,7 @@ if __name__ == "__main__":
     ############
     #  Parser  #
     ############
+    # todo rewite using cli or click
     parser = argparse.ArgumentParser(
         description='Optional app description'
     )

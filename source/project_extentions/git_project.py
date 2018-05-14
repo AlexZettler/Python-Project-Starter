@@ -3,6 +3,8 @@ from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TA
 
 import os
 
+import git
+
 
 class GitProject(ProjectExtention):
 

@@ -10,8 +10,7 @@ def give_permission_after_verification(
         completed_message: str,
         incomplete_message: str, *args, **kwargs):
     """
-    Creates a project 
-
+    Returns a boolean representing if the command was accepted
     """
 
     while True:
