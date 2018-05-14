@@ -12,9 +12,14 @@ class GitProject(ProjectExtention):
         super().__init__(name, proj_path)
 
     def _create(self):
+
+        #repo = git.Repo(self.proj_path)
+        bare_repo = git.Repo.init(
+            "/".join((self.proj_path, ".git")), bare=True)
+
         print("One day I will be able to create your glorious git repo")
         # git.create_git_repo(proj_path)
-        raise NotImplementedError
+        #raise NotImplementedError
 
     def _load(self):
         pass
@@ -26,16 +31,16 @@ class GitProject(ProjectExtention):
         """
         checks for existing .git repository in specified directory
         """
+
         os.chdir(self.proj_path)
 
-        #return True in [f for f in os.listdir() if os.path.isdir(f) and f == ".git"]
+        # return True in [f for f in os.listdir() if os.path.isdir(f) and f == ".git"]
 
         for f in os.listdir():
             if os.path.isdir(f):
                 if f == ".git":
                     return True
         return False
-
 
     def _on_existing_create_new(self):
         return False
