@@ -177,10 +177,17 @@ class ProjectExtention(manage_project.BaseProject):
             # If there is no previously existing Project
             if not extention_class._check_for_existing(self):
 
-                # Create new Subproject
-                print(get_indent("Creating new subproject"))
-                extention_class._create(self)
-                created_sucessfully = True
+                try:
+                    # Create new Subproject
+                    print(get_indent("Creating new subproject"))
+                    extention_class._create(self)
+                    created_sucessfully = True
+
+                except NotImplementedError as e:
+                    print(get_indent("Could not create {} Subproject as it's _create method was not implemented".format(
+                extention_class.__name__)))
+                    created_sucessfully = False
+                    #raise e
 
             # If there is an existing project of this type created
             else:
