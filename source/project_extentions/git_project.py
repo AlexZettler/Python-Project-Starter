@@ -2,45 +2,57 @@ from manage_project import ProjectExtention, UnopenableProject
 from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TABS_PER_INDENT
 
 import os
-
 import git
+import os.path as osp
 
 
 class GitProject(ProjectExtention):
+    """
+    This extention creates a git project and adds some essential files
+
+    Basic tutorial follows:
+    https://gitpython.readthedocs.io/en/stable/tutorial.html#the-commit-object
+    """
 
     def __init__(self, name: str, proj_path: str,):
         super().__init__(name, proj_path)
 
     def _create(self):
 
-        #repo = git.Repo(self.proj_path)
-        bare_repo = git.Repo.init(
-            "/".join((self.proj_path, ".git")), bare=True)
+        # Get a list of files to add to the repo by default
+        files = ["__init__.py"]
+        files = [osp.join(self.proj_path, "source", fn) for fn in files]
 
-        print("One day I will be able to create your glorious git repo")
-        # git.create_git_repo(proj_path)
-        #raise NotImplementedError
+        # Initialize the repo
+        self.repo = git.Repo.init(self.proj_path)
+
+        # Creates empty files
+        for file_name in files:
+            open(file_name, 'wb').close()
+
+        # adds the files to the repo
+        self.repo.index.add(files)
+
+        # make first commit to the repo
+        self.repo.index.commit("initial commit")
 
     def _load(self):
-        pass
+        self.repo = git.Repo(self.proj_path)
 
     def _open(self):
         raise UnopenableProject
 
     def _check_for_existing(self):
         """
-        checks for existing .git repository in specified directory
+        Checks for existing git repository in specified directory
         """
 
-        os.chdir(self.proj_path)
+        try:
+            git.Repo(self.proj_path)
+            return True
 
-        # return True in [f for f in os.listdir() if os.path.isdir(f) and f == ".git"]
-
-        for f in os.listdir():
-            if os.path.isdir(f):
-                if f == ".git":
-                    return True
-        return False
+        except git.InvalidGitRepositoryError:
+            return False
 
     def _on_existing_create_new(self):
         return False
