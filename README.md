@@ -1,34 +1,37 @@
 Python Project Starter
 
-A project to get you up, running and working on new projects as fast as possible
+A project to get YOU, up, running and working on new projects as fast as possible
 
-This project is written almost entirely in python with a command line interface to pass arguements into the script
-This means that it is *mostly* cross platform but currently only officially supports Linux.
+This project is written in python and assists in the creation of initializing new projects
 
 
-create_env.sh
+A command line interface assists in the installation of pipenv and creates a virtualenviroment to run the python script. This means that this tool can be used regardless of the python version you have installed
 
-    *The main script to set up a new project
 
-    *To create a new project run the following command with [project name] replaced with a string of the project name you wish to create that has the same naming restrictions as a directory:
+The command line interface also passes arguements into the project creation script. This allows for the command line interface to execute the script with parameters as the python virtual enviroment.
 
+This means that the script is *mostly* cross platform but currently only officially supports Linux.
+
+
+
+To create a new project run the following command with [project name] replaced with a string of the project name you wish to create:
+
+    Linux:
         >bash project [project name] *args
 
-
 create_vsc_workspace.py
+    This script loads all project extensions based on passed flags
 
-    *The script that creates the enviroment
-    
-    *The script accepts a single parameter of the project name and:
-    
-        *Creates the folder structure
-    
-        *Creates the pipenv
+        *The script requires an initial positional arg of the project name:
+            *Creates the folder structure
+        
+        --pipenv
+            *Creates a pipenv in the source folder
 
-        #*Creates a git repository for the project
+        --git
+            *Creates a git repository for the project[NEW]
 
-        *Creates a json formatted code-workspace file with a link to the pipenv python executable.
+        --vscws
+            *Creates a json formatted code-workspace file. VS code workspaces now support pipenv so your project will get syntex highlighting based on your installed packages.
 
-    *to create a python project in the managed_projects directory run: 
-    
-        >python source/manage_project.py [projectname] *args
+
