@@ -3,7 +3,9 @@ import os
 import platform
 import sys
 import argparse
+import pathlib
 
+import os.path as osp
 
 # Local files
 import confirm_command
@@ -47,16 +49,6 @@ def print_indent_title(title_str):
 ###############################
 
 
-def create_folder_structure(proj_path, *paths):
-    """
-    Creates a folder structure fiven by paths
-    """
-    import pathlib
-    for d in paths:
-        pathlib.Path(d).mkdir(parents=True, exist_ok=True)
-
-    if "source" not in os.listdir(proj_path):
-        raise Exception("project source folder could not be created")
 
 
 class UnopenableProject(Exception):
@@ -90,12 +82,12 @@ class BaseProject(object):
         self.name = name
         self.proj_path = proj_path
 
-        self.source_path = "{}/{}".format(proj_path, "source")
+        self.source_path = osp.join(self.proj_path, "source") 
+
         # print(self.source_path)
 
         # create folder structure
-        create_folder_structure(
-            self.proj_path,
+        self.create_folder_structure(
             *(
                 self.proj_path,
                 self.source_path,
@@ -104,6 +96,16 @@ class BaseProject(object):
 
         # Creates the set of project extentions currently loaded
         self.project_extentions = set()
+
+    def create_folder_structure(self, *paths):
+        """
+        Creates a folder structure fiven by paths
+        """
+        for d in paths:
+            pathlib.Path(d).mkdir(parents=True, exist_ok=True)
+
+        if "source" not in os.listdir(self.proj_path):
+            raise Exception("project source folder could not be created")
 
 
 class ProjectExtention(manage_project.BaseProject):
@@ -158,6 +160,9 @@ class ProjectExtention(manage_project.BaseProject):
             handle a project of this type already existing
         """
         raise NotImplementedError
+
+
+
 
     def create(self, extention_class):
         """
@@ -264,9 +269,10 @@ class ProjectExtention(manage_project.BaseProject):
 from project_extentions.git_project import GitProject
 from project_extentions.pipenv_project import PipenvProject
 from project_extentions.vscode_workspace_project import VSCodeWorkspaceProject
+from project_extentions.pycharm_project import PycharmProject
 
-
-class Project(PipenvProject, VSCodeWorkspaceProject, GitProject):
+#todo figure out how to get this extending from projectbase
+class Project(PipenvProject, VSCodeWorkspaceProject, PycharmProject, GitProject):
     """
     Project with all project extentions applied
     """
@@ -381,12 +387,11 @@ if __name__ == "__main__":
     # print(manager_directory)
 
     # full path of the main managed projects directory
-    base_path = "{}/managed_projects".format(
-        os.path.dirname(manager_directory))
+    base_path = osp.join(os.path.dirname(manager_directory), "managed_projects") 
     # print(base_path)
 
     # full path to the directory containing the project
-    proj_path = "{}/{}".format(base_path, args.name)
+    proj_path = osp.join(base_path, args.name)
     # print(proj_path)
 
     #######################
