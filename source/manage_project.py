@@ -185,7 +185,7 @@ class ProjectExtention(manage_project.BaseProject):
 
                 except NotImplementedError as e:
                     print(get_indent("Could not create {} Subproject as it's _create method was not implemented".format(
-                extention_class.__name__)))
+                        extention_class.__name__)))
                     created_sucessfully = False
                     #raise e
 
@@ -332,6 +332,7 @@ if __name__ == "__main__":
     ############
     #  Parser  #
     ############
+    # todo rewite using cli or click
     parser = argparse.ArgumentParser(
         description='Optional app description'
     )

@@ -6,19 +6,21 @@ GOTO :CMDSCRIPT
 
 if :; then
 
+  #Test if pipenv is installed
   if [[ ! $(pip freeze) = *"pipenv"* ]]; then
     pip install pipenv
   fi
 
+  #test to see if a pipenv is created in the project source folder
   cd "source"
   if [ ! -f Pipfile ]; then
     pipenv --python 3.6
   fi
 
-  pythonpath=$(pipenv --py)
-  projectmanager="manage_project.py"
+  manager="manage_project.py"
 
-  $pythonpath $projectmanager $@
+  #Run the project_manager as the created pipenv and pass all arguments
+  pipenv run python $manager $@
 
 fi
 
