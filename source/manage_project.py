@@ -115,6 +115,11 @@ class ProjectExtention(manage_project.BaseProject):
     To create an extention, call the _create method to verfiy the
     """
 
+    run_cmd_map = {
+        "linux": "xdg-open",
+        "windows": "run"
+    }
+
     def __init__(self, name: str, proj_path: str):
 
         super().__init__(name, proj_path)
