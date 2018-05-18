@@ -4,7 +4,8 @@ from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TA
 import os
 import git
 import os.path as osp
-
+import subprocess
+import sys
 
 class GitProject(ProjectExtention):
     """
@@ -40,6 +41,18 @@ class GitProject(ProjectExtention):
         self.repo = git.Repo(self.proj_path)
 
     def _open(self):
+
+        
+        try:
+
+            p = subprocess.Popen(["/usr/share/gitkraken/gitkraken", "-p" , self.proj_path, ">/dev/null", "&"])
+            #os.system(" ".join())
+
+
+        except KeyError as e:
+            print("{} does not have a run command mapped".format(sys.platform))
+            raise e
+
         raise UnopenableProject
 
     def _check_for_existing(self):

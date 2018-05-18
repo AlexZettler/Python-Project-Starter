@@ -5,7 +5,9 @@ from manage_project import print_indent_title, get_indent, INDENTATION_LEVEL, TA
 
 import confirm_command
 import json
-
+import os.path as osp
+import subprocess
+import sys
 
 class VSCodeWorkspaceProject(ProjectExtention):
     def __init__(self, name: str, proj_path: str,):
@@ -22,14 +24,22 @@ class VSCodeWorkspaceProject(ProjectExtention):
         pass
 
     def _open(self):
-        # todo figure how to run as system default executable
-        raise UnopenableProject()
+        """
+        run vscode workspace using default application to open the program
+        """
+
+
+        try:
+            subprocess.call([self.run_cmd_map[sys.platform], self.get_workspace_path()])
+        except KeyError as e:
+            print("{} does not have a run command mapped".format(sys.platform))
+            raise e
 
     def _check_for_existing(self):
 
         print(get_indent("Checking for existing file"))
         try:
-            with open(self.get_workspace_path(self.proj_path, self.name), "r") as f:
+            with open(self.get_workspace_path(), "r") as f:
                 print(get_indent("File read correctly"))
                 return True
 
@@ -40,22 +50,19 @@ class VSCodeWorkspaceProject(ProjectExtention):
         return True
 
     def make_vs_code_workspace(self, *args, **kwargs):
-        self.create_workspace(self.proj_path, self.name)
+        self.create_workspace()
 
-    def get_workspace_name(self, proj_name: str):
+    def get_workspace_name(self):
         """
         returns the name of the workspace file to create
         """
-        return "{}.code-workspace".format(proj_name)
+        return "{}.code-workspace".format(self.name)
 
-    def get_workspace_path(self, proj_path: str, proj_name: str):
+    def get_workspace_path(self):
         """
         returns the path and name of the workspace file to create
         """
-        return "{}/{}".format(
-            proj_path,
-            self.get_workspace_name(proj_name)
-        )
+        return osp.join(self.proj_path, self.get_workspace_name())
 
     def make_workspace_dict(self):
         """
@@ -72,7 +79,7 @@ class VSCodeWorkspaceProject(ProjectExtention):
         }
         return vs_code_dict
 
-    def create_workspace(self, proj_path: str, proj_name: str):
+    def create_workspace(self):
 
         # Make the workspace dictionary
         vs_code_dict = self.make_workspace_dict()
@@ -82,7 +89,7 @@ class VSCodeWorkspaceProject(ProjectExtention):
             vs_code_dict, sort_keys=True, indent=2, separators=(',', ': '))
 
         # Create the path including the file name
-        file_path_and_name = self.get_workspace_path(proj_path, proj_name)
+        file_path_and_name = self.get_workspace_path()
 
         # Write json data
         with open(file_path_and_name, "w") as f:
