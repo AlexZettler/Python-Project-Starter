@@ -1,7 +1,7 @@
 **********************
 Python Project Starter
 **********************
-This project is written in python and assists in the creation of initializing new projects.
+This project is written in python to streamline the initialization new projects.
 
 
 Requirements:
