@@ -25,13 +25,16 @@ Windows/cross-platform:
         >cd into [devdir]/source
         >pipenv run python manage_project.py *args
 
-manage_project.py [proj_name] *args
-    This script loads all project extensions based on passed flags listed below
+**********************
 
+    manage_project.py [proj_name] *args
+<br>
+This script loads all project extensions based on passed flags listed below
+**********************
 <br>
 
       --pipenv
-*Creates a python 3.6 pipenv in the source folder
+*Creates a python 3.6 pipenv in the source folder<br>
 -[todo] specify a python version to use
 
 
