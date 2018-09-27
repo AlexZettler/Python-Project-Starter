@@ -30,6 +30,7 @@ Windows/cross-platform:
     manage_project.py [proj_name] *args
 <br>
 This script loads all project extensions based on passed flags listed below
+
 **********************
 <br>
 
