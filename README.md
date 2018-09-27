@@ -4,7 +4,7 @@ Python Project Starter
 This project is written in python to streamline the initialization new projects.
 
 
-Requirements:
+Requirements:<br>
     -A python installation in your system path<br>
     -pipenv [If using windows]<br>
 
@@ -14,8 +14,9 @@ To download with GIT:
     git clone "https://github.com/AlexZettler/Python_Project_Starter" [devdir]
 
     
-To get going:
+To get going:<br>
 To create a new project run the following command with [project name] replaced with a string of the project name you wish to create:
+<br>
 
 Linux:
 
