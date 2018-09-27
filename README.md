@@ -31,12 +31,14 @@ manage_project.py
         
         --pipenv
             *Creates a python 3.6 pipenv in the source folder
-            *[todo] specify a python version to use
+            -[todo] specify a python version to use
 
         --git
             *Creates a git repository for the project
-            [todo]optionally commits your project to either github, or bitbucket
-            [semi-implemented] launch your favorite git gui client
+            -[todo]optionally commits your project to either github, or bitbucket
+            -[semi-implemented] launch your favorite git gui client
 
         --vscws
-            *Creates a json formatted code-workspace file. VS code workspaces now support pipenv, so your project will get syntex highlighting based on your installed packages. Executing this file will also open vsc in the workspace and save your project preferences.
+            *Creates a json formatted code-workspace file.
+             VS code workspaces now support pipenv, so your project will get syntex highlighting.
+             Executing this file will also open vsc in the workspace and save your project preferences.
