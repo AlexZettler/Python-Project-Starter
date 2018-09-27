@@ -5,11 +5,12 @@ This project is written in python to streamline the initialization new projects.
 
 
 Requirements:
-    -A python installation in your system path
-    -pipenv [If using windows]
+    -A python installation in your system path<br>
+    -pipenv [If using windows]<br>
 
 
 To download with GIT:
+
     git clone "https://github.com/AlexZettler/Python_Project_Starter" [devdir]
 
     
