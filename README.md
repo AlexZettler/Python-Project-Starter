@@ -26,21 +26,21 @@ To create a new project run the following command with [project name] replaced w
 manage_project.py [proj_name] *args
     This script loads all project extensions based on passed flags listed below
 
-<br><br>
+<br>
 
       --pipenv
 *Creates a python 3.6 pipenv in the source folder
 -[todo] specify a python version to use
 
 
-<br><br>
+<br>
 
         --git
 *Creates a git repository for the project
 -[todo]optionally commits your project to either github, or bitbucket
 -[semi-implemented] launch your favorite git gui client
 
-<br><br>
+<br>
 
         --vscws
 *Creates a json formatted code-workspace file. VS code workspaces now support pipenv, so your project will get syntex highlighting. Executing this file will also open vsc in the workspace and save your project preferences.
